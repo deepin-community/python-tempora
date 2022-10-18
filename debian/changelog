@@ -1,0 +1,73 @@
+python-tempora (4.1.2-1) unstable; urgency=medium
+
+  * New upstream version 4.1.2
+
+ -- Jeroen Ploemen <jcfp@debian.org>  Thu, 11 Nov 2021 18:33:57 +0000
+
+python-tempora (4.1.1-2) unstable; urgency=medium
+
+  * Upload to unstable.
+  * Copyright: use my debian.org email address.
+  * Bump Standards-Version to 4.6.0 (from 4.5.1; no further changes).
+
+ -- Jeroen Ploemen <jcfp@debian.org>  Thu, 19 Aug 2021 10:37:09 +0000
+
+python-tempora (4.1.1-1) experimental; urgency=medium
+
+  [ Debian Janitor ]
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
+    Repository-Browse.
+
+  [ Ondřej Nový ]
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Sandro Tosi ]
+  * Use the new Debian Python Team contact name and address
+
+  [ Jeroen Ploemen ]
+  * New upstream release.
+  * Watch: use generic github stanza.
+  * Control:
+    + set Rules-Requires-Root: no.
+    + bump compat level to 13 (from 12; no further changes).
+  * Bump Standards-Version to 4.5.1 (from 4.5.0; no further changes).
+  * Watch: bump version to 4.
+  * Patches: remove, no longer needed.
+  * Copyright: bump years for upstream and packaging.
+  * Rules: change dh option name from --buildsys to --buildsystem.
+
+ -- Jeroen Ploemen <jcfp@debian.org>  Wed, 07 Jul 2021 11:51:24 +0000
+
+python-tempora (2.1.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Rules, tests:
+    + remove restrictions on testing with python3.8, now that
+      freezegun was updated.
+    + account for upstream reshuffling of test files.
+    + exclude a single test that requires a pytest extension.
+  * Rules: add execute_after_dh_auto_install to ensure tests aren't
+    installed into the binary package.
+  * Bump Standards-Version to 4.5.0 (from 4.4.1, no further changes).
+  * Patches: remove fuzz from 01.
+
+ -- JCF Ploemen (jcfp) <linux@jcf.pm>  Tue, 11 Feb 2020 15:07:58 +0000
+
+python-tempora (1.14.1-2) unstable; urgency=medium
+
+  * Rules: run tests during build.
+  * Control:
+    + add build-deps on python3-pytest, python3-freezegun, and
+      python3-tz: needed for tests.
+  * Patches: add 01_pytest_no_flake8.
+  * Tests: add upstream-tests as autopkgtest, replacing the trivial
+    autopkgtest-pkg-python.
+
+ -- JCF Ploemen (jcfp) <linux@jcf.pm>  Mon, 25 Nov 2019 20:24:43 +0000
+
+python-tempora (1.14.1-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #941490)
+
+ -- JCF Ploemen (jcfp) <linux@jcf.pm>  Sat, 02 Nov 2019 18:41:54 +0000

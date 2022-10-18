@@ -1,0 +1,32 @@
+Source: python-tempora
+Homepage: https://github.com/jaraco/tempora
+Section: python
+Priority: optional
+Maintainer: Jeroen Ploemen <jcfp@debian.org>
+Uploaders: Debian Python Team <team+python@tracker.debian.org>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-python,
+ python3-all,
+ python3-freezegun <!nocheck>,
+ python3-jaraco.functools <!nocheck>,
+ python3-pytest <!nocheck>,
+ python3-setuptools,
+ python3-setuptools-scm,
+ python3-tz <!nocheck>
+Standards-Version: 4.6.0
+Vcs-Git: https://salsa.debian.org/python-team/packages/python-tempora.git
+Vcs-Browser: https://salsa.debian.org/python-team/packages/python-tempora
+Rules-Requires-Root: no
+
+Package: python3-tempora
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: Python objects and routines pertaining to date and time
+ Tempora is a set of Python objects and routines pertaining to date and
+ time.
+ .
+ Besides the top level package module (tempora), it includes:
+  * timing: routines for measuring and profiling.
+  * schedule: an event scheduler.
+  * utc: routines for getting datetime-aware UTC values.

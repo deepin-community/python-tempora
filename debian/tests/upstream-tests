@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e -u
+
+SOURCE_DIR="$(pwd)"
+
+for py in $(py3versions -r 2>/dev/null); do
+	cd "$AUTOPKGTEST_TMP"
+	# cleanup
+	rm -vrf "$AUTOPKGTEST_TMP"/*
+	# create a fresh copy of the tests
+	cp -va "$SOURCE_DIR"/pytest.ini "$SOURCE_DIR"/tempora/tests "$AUTOPKGTEST_TMP"/
+
+	echo "Running testsuite with $py:"
+	$py -m pytest tests
+	cd /usr/lib/python3/dist-packages/tempora
+	echo "Running doctests with $py:"
+	$py -m pytest --doctest-modules . -k 'not tempora.get_nearest_year_for_day'
+done
