@@ -1,3 +1,42 @@
+python-tempora (5.5.0-1) unstable; urgency=medium
+
+  * New upstream version 5.5.0
+  * Control, tests: add (build-)depends on tzdata-legacy to avoid
+    issues with missing timezones caused by changes in tzdata/2023c-8
+    (Closes: #1052773).
+
+ -- Jeroen Ploemen <jcfp@debian.org>  Mon, 09 Oct 2023 07:45:04 +0000
+
+python-tempora (5.3.0-1) unstable; urgency=medium
+
+  * New upstream version 5.3.0
+  * Copyright: bump years.
+  * Bump Standards-Version to 4.6.2 (from 4.6.1; no further changes).
+  * Rules: account for upstream moving tests out of the module dir.
+  * Tests: account for moved test files.
+
+ -- Jeroen Ploemen <jcfp@debian.org>  Thu, 15 Jun 2023 10:58:02 +0000
+
+python-tempora (5.1.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Tests: loop over py3versions -s rather than -r.
+  * Rules: use execute_after instead of an override for the examples.
+  * Rules: remove execute_after_dh_auto_install, no longer needed to
+    avoid installing the tests in the binary pkg.
+  * Control: bump std-ver to 4.6.1 (from 4.6.0; no further changes).
+
+ -- Jeroen Ploemen <jcfp@debian.org>  Mon, 12 Dec 2022 10:46:36 +0000
+
+python-tempora (5.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Copyright: bump years.
+  * Control: add build-dep on pybuild-plugin-pyproject, needed for
+    PEP517 support.
+
+ -- Jeroen Ploemen <jcfp@debian.org>  Mon, 04 Apr 2022 14:41:35 +0000
+
 python-tempora (4.1.2-1) unstable; urgency=medium
 
   * New upstream version 4.1.2

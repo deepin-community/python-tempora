@@ -5,86 +5,21 @@ import time
 import re
 import numbers
 import functools
-import warnings
 import contextlib
-
-from jaraco.functools import once
-
-
-class Parser:
-    """
-    *deprecated*
-
-    Datetime parser: parses a date-time string using multiple possible
-    formats.
-
-    >>> p = Parser(('%H%M', '%H:%M'))
-    >>> tuple(p.parse('1319'))
-    (1900, 1, 1, 13, 19, 0, 0, 1, -1)
-    >>> dateParser = Parser(('%m/%d/%Y', '%Y-%m-%d', '%d-%b-%Y'))
-    >>> tuple(dateParser.parse('2003-12-20'))
-    (2003, 12, 20, 0, 0, 0, 5, 354, -1)
-    >>> tuple(dateParser.parse('16-Dec-1994'))
-    (1994, 12, 16, 0, 0, 0, 4, 350, -1)
-    >>> tuple(dateParser.parse('5/19/2003'))
-    (2003, 5, 19, 0, 0, 0, 0, 139, -1)
-    >>> dtParser = Parser(('%Y-%m-%d %H:%M:%S', '%a %b %d %H:%M:%S %Y'))
-    >>> tuple(dtParser.parse('2003-12-20 19:13:26'))
-    (2003, 12, 20, 19, 13, 26, 5, 354, -1)
-    >>> tuple(dtParser.parse('Tue Jan 20 16:19:33 2004'))
-    (2004, 1, 20, 16, 19, 33, 1, 20, -1)
-
-    Be forewarned, a ValueError will be raised if more than one format
-    matches:
-
-    >>> Parser(('%H%M', '%H%M%S')).parse('732')
-    Traceback (most recent call last):
-        ...
-    ValueError: More than one format string matched target 732.
-
-    >>> Parser(('%H',)).parse('22:21')
-    Traceback (most recent call last):
-    ...
-    ValueError: No format strings matched the target 22:21.
-    """
-
-    formats = ('%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d', '%d-%b-%Y', '%d-%b-%y')
-    "some common default formats"
-
-    def __init__(self, formats=None):
-        warnings.warn("Use dateutil.parser", DeprecationWarning)
-        if formats:
-            self.formats = formats
-
-    def parse(self, target):
-        self.target = target
-        results = tuple(filter(None, map(self._parse, self.formats)))
-        del self.target
-        if not results:
-            tmpl = "No format strings matched the target {target}."
-            raise ValueError(tmpl.format(**locals()))
-        if not len(results) == 1:
-            tmpl = "More than one format string matched target {target}."
-            raise ValueError(tmpl.format(**locals()))
-        return results[0]
-
-    def _parse(self, format):
-        try:
-            result = time.strptime(self.target, format)
-        except ValueError:
-            result = False
-        return result
+from numbers import Number
+from typing import Union, Tuple, Iterable
+from typing import cast
 
 
 # some useful constants
-osc_per_year = 290091329207984000
+osc_per_year = 290_091_329_207_984_000
 """
 mean vernal equinox year expressed in oscillations of atomic cesium at the
 year 2000 (see http://webexhibits.org/calendars/timeline.html for more info).
 """
-osc_per_second = 9192631770
+osc_per_second = 9_192_631_770
 seconds_per_second = 1
-seconds_per_year = 31556940
+seconds_per_year = 31_556_940
 seconds_per_minute = 60
 minutes_per_hour = 60
 hours_per_day = 24
@@ -98,8 +33,8 @@ seconds_per_month = seconds_per_year / 12
 hours_per_month = hours_per_day * days_per_year / 12
 
 
-@once
-def _needs_year_help():
+@functools.lru_cache()
+def _needs_year_help() -> bool:
     """
     Some versions of Python render %Y with only three characters :(
     https://bugs.python.org/issue39103
@@ -107,14 +42,19 @@ def _needs_year_help():
     return len(datetime.date(900, 1, 1).strftime('%Y')) != 4
 
 
-def ensure_datetime(ob):
+AnyDatetime = Union[datetime.datetime, datetime.date, datetime.time]
+StructDatetime = Union[Tuple[int, ...], time.struct_time]
+
+
+def ensure_datetime(ob: AnyDatetime) -> datetime.datetime:
     """
     Given a datetime or date or time object from the ``datetime``
     module, always return a datetime using default values.
     """
     if isinstance(ob, datetime.datetime):
         return ob
-    date = time = ob
+    date = cast(datetime.date, ob)
+    time = cast(datetime.time, ob)
     if isinstance(ob, datetime.date):
         time = datetime.time()
     if isinstance(ob, datetime.time):
@@ -122,7 +62,13 @@ def ensure_datetime(ob):
     return datetime.datetime.combine(date, time)
 
 
-def strftime(fmt, t):
+def infer_datetime(ob: Union[AnyDatetime, StructDatetime]) -> datetime.datetime:
+    if isinstance(ob, (time.struct_time, tuple)):
+        ob = datetime.datetime(*ob[:6])  # type: ignore
+    return ensure_datetime(ob)
+
+
+def strftime(fmt: str, t: Union[AnyDatetime, tuple, time.struct_time]) -> str:
     """
     Portable strftime.
 
@@ -181,15 +127,11 @@ def strftime(fmt, t):
     >>> strftime('%Y', datetime.time())
     '1900'
     """
-    if isinstance(t, (time.struct_time, tuple)):
-        t = datetime.datetime(*t[:6])
-    t = ensure_datetime(t)
+    t = infer_datetime(t)
     subs = (
         ('%s', '%03d' % (t.microsecond // 1000)),
         ('%µ', '%03d' % (t.microsecond % 1000)),
-    )
-    if _needs_year_help():  # pragma: nocover
-        subs += (('%Y', '%04d' % t.year),)
+    ) + (('%Y', '%04d' % t.year),) * _needs_year_help()
 
     def doSub(s, sub):
         return s.replace(*sub)
@@ -376,21 +318,6 @@ def get_date_format_string(period):
     return ''.join(format_pieces)
 
 
-def divide_timedelta_float(td, divisor):
-    """
-    Divide a timedelta by a float value
-
-    >>> one_day = datetime.timedelta(days=1)
-    >>> half_day = datetime.timedelta(days=.5)
-    >>> divide_timedelta_float(one_day, 2.0) == half_day
-    True
-    >>> divide_timedelta_float(one_day, 2) == half_day
-    True
-    """
-    warnings.warn("Use native division", DeprecationWarning)
-    return td / divisor
-
-
 def calculate_prorated_values():
     """
     >>> monkeypatch = getfixture('monkeypatch')
@@ -405,10 +332,10 @@ def calculate_prorated_values():
     """
     rate = input("Enter the rate (3/hour, 50/month)> ")
     for period, value in _prorated_values(rate):
-        print("per {period}: {value}".format(**locals()))
+        print(f"per {period}: {value}")
 
 
-def _prorated_values(rate):
+def _prorated_values(rate: str) -> Iterable[Tuple[str, Number]]:
     """
     Given a rate (a string in units per unit time), and return that same
     rate for various time periods.
@@ -422,7 +349,8 @@ def _prorated_values(rate):
     year: 175316.333
 
     """
-    res = re.match(r'(?P<value>[\d.]+)/(?P<period>\w+)$', rate).groupdict()
+    match = re.match(r'(?P<value>[\d.]+)/(?P<period>\w+)$', rate)
+    res = cast(re.Match, match).groupdict()
     value = float(res['value'])
     value_per_second = value / get_period_seconds(res['period'])
     for period in ('minute', 'hour', 'day', 'month', 'year'):
@@ -455,11 +383,16 @@ def parse_timedelta(str):
     Note that months and years strict intervals, not aligned
     to a calendar:
 
-    >>> now = datetime.datetime.now()
-    >>> later = now + parse_timedelta('1 year')
-    >>> diff = later.replace(year=now.year) - now
+    >>> date = datetime.datetime.fromisoformat('2000-01-01')
+    >>> later = date + parse_timedelta('1 year')
+    >>> diff = later.replace(year=date.year) - date
     >>> diff.seconds
     20940
+
+    >>> parse_timedelta('foo')
+    Traceback (most recent call last):
+    ...
+    ValueError: Unexpected 'foo'
 
     >>> parse_timedelta('14 seconds foo')
     Traceback (most recent call last):
@@ -508,6 +441,13 @@ def parse_timedelta(str):
 
     >>> parse_timedelta('.002 µs, 499 ns')
     datetime.timedelta(microseconds=1)
+
+    Expect ValueError for other invalid inputs.
+
+    >>> parse_timedelta('13 feet')
+    Traceback (most recent call last):
+    ...
+    ValueError: Invalid unit feets
     """
     return _parse_timedelta_nanos(str).resolve()
 
@@ -534,7 +474,7 @@ def _check_unmatched(matches, text):
         check_unmatched(text[pos : match.start()])
         yield match
         pos = match.end()
-    check_unmatched(text[match.end() :])
+    check_unmatched(text[pos:])
 
 
 _unit_lookup = {
@@ -618,7 +558,11 @@ class _Saved_NS:
         if unit == 'nanoseconds':
             return _Saved_NS(nanoseconds=value)
 
-        res = _Saved_NS(td=datetime.timedelta(**{unit: value}))
+        try:
+            raw_td = datetime.timedelta(**{unit: value})
+        except TypeError:
+            raise ValueError(f"Invalid unit {unit}")
+        res = _Saved_NS(td=raw_td)
         with contextlib.suppress(KeyError):
             res.nanoseconds = int(value * cls.multiplier[unit]) % 1000
         return res
@@ -639,19 +583,6 @@ class _Saved_NS:
 
     def __repr__(self):
         return f'_Saved_NS(td={self.td!r}, nanoseconds={self.nanoseconds!r})'
-
-
-def divide_timedelta(td1, td2):
-    """
-    Get the ratio of two timedeltas
-
-    >>> one_day = datetime.timedelta(days=1)
-    >>> one_hour = datetime.timedelta(hours=1)
-    >>> divide_timedelta(one_hour, one_day) == 1 / 24
-    True
-    """
-    warnings.warn("Use native division", DeprecationWarning)
-    return td1 / td2
 
 
 def date_range(start=None, stop=None, step=None):

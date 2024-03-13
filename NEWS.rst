@@ -1,3 +1,73 @@
+v5.5.0
+======
+
+Features
+--------
+
+- Stopwatch now uses ``time.monotonic``.
+
+
+v5.4.0
+======
+
+Features
+--------
+
+- Require Python 3.8 or later.
+
+
+v5.3.0
+======
+
+#24: Removed use of ``datetime.utc**`` functions
+deprecated in Python 3.12.
+
+v5.2.2
+======
+
+#22: Fixed bug in tests that would fail when a leap year
+was about a year away.
+
+v5.2.1
+======
+
+#21: Restored dependency on ``jaraco.functools``, still
+used in timing module.
+
+v5.2.0
+======
+
+Remove dependency on jaraco.functools.
+
+v5.1.1
+======
+
+Packaging refresh.
+
+v5.1.0
+======
+
+Introduced ``infer_datetime`` and added some type hints.
+
+v5.0.2
+======
+
+- Refreshed project.
+- Enrolled with Tidelift.
+
+v5.0.1
+======
+
+- Refreshed project.
+
+v5.0.0
+======
+
+- Removed deprecated ``divide_*`` functions and ``Parser``
+  class.
+- Require Python 3.7 or later.
+- #19: Fixed error reporting in parse_timedelta.
+
 v4.1.2
 ======
 

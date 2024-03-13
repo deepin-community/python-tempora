@@ -4,12 +4,12 @@ set -e -u
 
 SOURCE_DIR="$(pwd)"
 
-for py in $(py3versions -r 2>/dev/null); do
+for py in $(py3versions -s 2>/dev/null); do
 	cd "$AUTOPKGTEST_TMP"
 	# cleanup
 	rm -vrf "$AUTOPKGTEST_TMP"/*
 	# create a fresh copy of the tests
-	cp -va "$SOURCE_DIR"/pytest.ini "$SOURCE_DIR"/tempora/tests "$AUTOPKGTEST_TMP"/
+	cp -va "$SOURCE_DIR"/pytest.ini "$SOURCE_DIR"/tests "$AUTOPKGTEST_TMP"/
 
 	echo "Running testsuite with $py:"
 	$py -m pytest tests

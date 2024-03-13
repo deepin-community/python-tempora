@@ -1,2 +1,2 @@
 Tests: upstream-tests
-Depends: @, python3-all, python3-freezegun, python3-pytest
+Depends: @, python3-all, python3-freezegun, python3-pytest, tzdata-legacy
